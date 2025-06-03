@@ -1,4 +1,4 @@
-from enum import global_enum_repr
+from reedsolo import RSCodec
 from PIL import Image
 
 QR_SIZE = 21
@@ -91,6 +91,7 @@ def draw_fip(qr):
         if bits[bit_idx] == "1":
             qr.putpixel((8, row), (51, 137, 55))
 
+        RESERVED[row][8] = True
         bit_idx+=1
 
     #Horizontal
@@ -101,6 +102,7 @@ def draw_fip(qr):
         if bits[bit_idx] == "1":
             qr.putpixel((col, 8), (51, 137, 55))
 
+        RESERVED[8][col] = True
         bit_idx+=1
         
     
@@ -111,12 +113,14 @@ def draw_fip(qr):
         if bits[bit_idx] == "1":
             qr.putpixel((8, QR_SIZE-1-row), (51, 137, 55))
 
+        RESERVED[QR_SIZE-1-row][8] = True
         bit_idx+=1
 
     for col in range(8):
         if bits[bit_idx] == "1":
             qr.putpixel((QR_SIZE-1-col, 8), (151, 137, 55))
 
+        RESERVED[8][QR_SIZE-1-col] = True
         bit_idx+=1
 
     #Draw The Stagnant 
@@ -135,8 +139,21 @@ def draw_tp(qr):
             qr.putpixel((6, row), (0, 0, 0))
         RESERVED[row][6] = True
 
-def zig_zag_deez_nuts(data_format):
-    bits = list(data_format)
+def encode_data(data):
+    data_padded = data.ljust(19, b'\x00')  # OR using pad bytes like 0xEC and 0x11 alternating
+
+    rsc = RSCodec(7)
+    ecc = rsc.encode(data_padded)[-7:]  # Just get the last 7 ECC bytes
+
+    codewords = data_padded + ecc     
+    # codewords = data_padded 
+    bits = ''.join(f'{byte:08b}' for byte in codewords)
+
+    return bits 
+
+
+def zig_zag_deez_nuts(bits):
+    bits = list(bits)
     size = len(RESERVED)
     col = QR_SIZE-1
     bit_idx = 0 
@@ -157,12 +174,13 @@ def zig_zag_deez_nuts(data_format):
         col-=2
 
 if __name__ == "__main__":
+    data = b"Hello, World fucke"
     qr = Image.new(mode="RGB", size=(GRID_SIZE, GRID_SIZE), color="white")
     draw_pp(qr)
     draw_fip(qr)
     draw_tp(qr)
-    z_fill = "01011010"*1
-    zig_zag_deez_nuts("010000010001"+z_fill)
+    bits = encode_data(data)
+    zig_zag_deez_nuts(bits)
 
     qr.show()
 
