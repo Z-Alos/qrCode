@@ -77,7 +77,7 @@ def calculate_format_info(data_bits_5bit):
 
 def draw_fip(qr, mask_type):
     #first 5 bits
-    ec_level = "11"
+    ec_level = "01"
 
     MASK_TYPES = {
         0: "000",  
@@ -93,7 +93,7 @@ def draw_fip(qr, mask_type):
     first_5_bit= ec_level+MASK_TYPES[mask_type]
 
     #BCH
-    bch = calculate_format_info(int(first_5_bit))
+    bch = calculate_format_info(int(first_5_bit, 2))
     print(bch)
     bits = list(bch) 
     bit_idx = 0
@@ -168,23 +168,34 @@ def draw_tp(qr):
         RESERVED[row][6] = True
 
 def encode_data(data):
-    data+=b"0000"
-    data_padded = data.ljust(12, b'\x00')  # OR using pad bytes like 0xEC and 0x11 alternating
+    mode_indicator = "0100"
+    char_count = f"{len(data):08b}"
+    data_bits = ''.join(f"{byte:08b}" for byte in data)
+
+    bit_stream = mode_indicator + char_count + data_bits
+
+    # Add upto 4 terminator bits(0)
+    max_bits = 152  
+    bit_stream += '0' * min(4, max_bits - len(bit_stream))
+
+    # Pad to byte alignment
+    while len(bit_stream) % 8 != 0:
+        bit_stream += '0'
+
+    # convert to byte array
+    data_bytes = bytearray(int(bit_stream[i:i+8], 2) for i in range(0, len(bit_stream), 8))
+
+    # pad to 19 bytes (Version 1-L)
+    pad_bytes = [0xEC, 0x11]
+    while len(data_bytes) < 19:
+        data_bytes.append(pad_bytes[len(data_bytes) % 2])
 
     rsc = RSCodec(7)
-    ecc = rsc.encode(data_padded)[-7:]  # Just get the last 7 ECC bytes
-
-    codewords = data_padded + ecc     
-    # codewords = data_padded 
-    bits = ''.join(f'{byte:08b}' for byte in codewords)
-
-    return bits 
+    full = rsc.encode(data_bytes)
+    return ''.join(f'{byte:08b}' for byte in full)
 
 
 def zig_zag_deez_nuts(bits, data):
-    data_type = "0100"
-    total_data_bytes = format(len(data), "08b")
-    bits = data_type+total_data_bytes+bits
     bits = list(bits)
     size = len(RESERVED)
     col = QR_SIZE-1
@@ -201,7 +212,7 @@ def zig_zag_deez_nuts(bits, data):
                 if 0 <= x < size and 0 <= y < size and not RESERVED[y][x]:
                     if bit_idx < len(bits) and bits[bit_idx] == "1":
                         qr.putpixel((x, y), (255, 0, 0))
-                        MODULES[x][y] = 1
+                        MODULES[y][x] = 1
                     bit_idx += 1        
 
         col-=2
@@ -234,8 +245,7 @@ def apply_mask(mask_id):
 
 
 if __name__ == "__main__":
-    # data = b"Hello, World fucke"
-    data = b"Hello, World"
+    data = b"Ainul Hoda"
     mask_type = 3
 
     qr = Image.new(mode="RGB", size=(GRID_SIZE, GRID_SIZE), color="white")
@@ -257,4 +267,6 @@ if __name__ == "__main__":
                 qr.putpixel((col, row), (255, 255, 255))
 
     qr.show()
+
+
 
