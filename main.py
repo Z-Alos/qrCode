@@ -55,7 +55,6 @@ def draw_pp(qr):
         RESERVED[7][QR_SIZE-8+col] = True
         RESERVED[QR_SIZE-8][col] = True
 
-# learn about BCH (this func is llm generated)
 def calculate_format_info(data_bits_5bit):
     generator = 0b10100110111  # 0x537
     data_bits_5bit &= 0b11111  # Force only 5 bits
@@ -66,13 +65,11 @@ def calculate_format_info(data_bits_5bit):
         if data & (1 << i):
             data ^= generator << (i - 10)
     
-    bch_code = data  # Now contains the 10-bit BCH
+    bch_code = data 
     full_format_info = (data_bits_5bit << 10) | bch_code
     masked = full_format_info ^ 0b101010000010010  # Format mask
 
-    return f"{masked:015b}"  # Final 15-bit string
-
-# ECC: Q = 0b11, Mask pattern: 7 = 0b111 → Combined: 0b11111 = 31
+    return f"{masked:015b}"  
 
 
 def draw_fip(qr, mask_type):
@@ -99,23 +96,11 @@ def draw_fip(qr, mask_type):
     bit_idx = 0
 
     #First Copy (Top-Left Position Pattern)
-    #First 7 bits goes down
-    #Last 8 bits goes left to right
-
-    #Vertical
-    for row in range(8):
-        if row == 6:
-            continue
-
-        if bits[bit_idx] == "1":
-            qr.putpixel((8, row), (51, 137, 55))
-            MODULES[row][8] = 1
-
-        RESERVED[row][8] = True
-        bit_idx+=1
+    #First 7 bits goes left to right 
+    #Last 7 bits goes vertically top to bottom 
 
     #Horizontal
-    for col in range(9):
+    for col in range(8):
         if col == 6:
             continue
 
@@ -124,6 +109,18 @@ def draw_fip(qr, mask_type):
             MODULES[8][col] = 1
 
         RESERVED[8][col] = True
+        bit_idx+=1
+
+    #Vertical
+    for row in range(7):
+        if row == 6:
+            continue
+
+        if bits[bit_idx] == "1":
+            qr.putpixel((8, row), (51, 137, 55))
+            MODULES[row][8] = 1
+
+        RESERVED[row][8] = True
         bit_idx+=1
         
     
@@ -245,7 +242,7 @@ def apply_mask(mask_id):
 
 
 if __name__ == "__main__":
-    data = b"Ainul Hoda"
+    data = b"www.youtube.com"
     mask_type = 3
 
     qr = Image.new(mode="RGB", size=(GRID_SIZE, GRID_SIZE), color="white")
@@ -260,7 +257,6 @@ if __name__ == "__main__":
     #qr code with Matrix
     for row in range(QR_SIZE):
         for col in range(QR_SIZE):
-            print(MODULES[row][col])
             if MODULES[row][col] == 1:
                 qr.putpixel((col, row), (0, 0, 0))
             else:
