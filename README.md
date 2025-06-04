@@ -62,12 +62,12 @@ It has Several Parts:
 ### ECC Level (Error Correction Level) 
 If you are observant then you would have noticed that even when the QR is slightly damaged it still works thanks the to the ECC Algorithm
 There are 4 Types of ECC level used in QR:
-
-|:-----------|:------------:|------------:|
-|Level L (Low) | 7% of data bytes can be restored. |
-|Level M (Medium) |	15% of data bytes can be restored. |
-|Level Q (Quartile) | 25% of data bytes can be restored. |
-|Level H (High)	| 30% of data bytes can be restored. |
+| Level | % Restorable |
+|:-----------|:------------:|
+|L (Low) | 7% of data bytes can be restored. |
+|M (Medium) |	15% of data bytes can be restored. |
+|Q (Quartile) | 25% of data bytes can be restored. |
+|H (High)	| 30% of data bytes can be restored. |
 
 It is defined in the first 2 
 
@@ -133,7 +133,7 @@ binary in QR is stored in a zig zag 2 column format making its way to the top le
 Following the data format segment there are 8 bits that specifies the number of character in the qr stored
 
 ### RSC (Reed Solomon Encoding)
-If you remember We discussed the level of error correction, now we we use the level to and the actual data to feed it to the rsc encoding to generate error correction bits
+If you remember We discussed the level of error correction, now we use the level and the actual data to feed it to the rsc encoding to generate error correction bits
 which would help us recover data if the qr is partially damaged.
 
 After That we will have all the bits that we'll place on the qr using the standard zig-zag 2 column format && then apply the mask with the lowest penalty score and boom...
