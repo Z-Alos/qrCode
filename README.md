@@ -139,6 +139,8 @@ which would help us recover data if the qr is partially damaged.
 After That we will have all the bits that we'll place on the qr using the standard zig-zag 2 column format && then apply the mask with the lowest penalty score and boom...
 QR is Generated
 
+![Screenshot](./screenshots/complete-qr.PNG)
+
 Adios Amigos,
 Powering Off...
 ~Zalos
