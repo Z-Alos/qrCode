@@ -97,7 +97,7 @@ def draw_fip(qr, mask_type):
 
     #First Copy (Top-Left Position Pattern)
     #First 7 bits goes left to right 
-    #Last 7 bits goes vertically top to bottom 
+    #Last 8 bits goes vertically top to bottom 
 
     #Horizontal
     for col in range(8):
@@ -112,7 +112,7 @@ def draw_fip(qr, mask_type):
         bit_idx+=1
 
     #Vertical
-    for row in range(7):
+    for row in range(9):
         if row == 6:
             continue
 
